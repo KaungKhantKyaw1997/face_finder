@@ -9,8 +9,15 @@ export default async function handler(
   try {
     const unknownFacesDir = path.resolve("./public/unknown_faces");
     const knownFacesDir = path.resolve("./public/known_faces");
+    const microserviceUrl = process.env.MICROSERVICE_URL;
 
-    const response = await axios.post("http://127.0.0.1:5000/detect_faces", {
+    if (!microserviceUrl) {
+      return res
+        .status(500)
+        .json({ message: "Microservice URL is not configured" });
+    }
+
+    const response = await axios.post(microserviceUrl, {
       unknown_faces_dir: unknownFacesDir,
       known_faces_dir: knownFacesDir,
     });
