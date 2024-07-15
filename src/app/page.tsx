@@ -1,112 +1,322 @@
+"use client";
+import { ChangeEvent, useState } from "react";
 import Image from "next/image";
+import axios from "axios";
+import Spinner from "./components/Spinner/Spinner";
 
 export default function Home() {
+  const [knownFaces, setKnownFaces] = useState<File[]>([]);
+  const [isUploadKnownFace, setIsUploadKnownFace] = useState(false);
+  const [unknownFace, setUnknownFace] = useState<File | null>(null);
+  const [isUploadUnknownFace, setIsUploadUnknownFace] = useState(false);
+  const [processedFace, setProcessedFace] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleKnownFacesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(event.target.files || []);
+    setKnownFaces((prevFiles) => [...prevFiles, ...newFiles]);
+  };
+
+  const handleRemoveKnownFace = (index: number) => {
+    setKnownFaces((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const handleUploadKnownFaces = async () => {
+    await axios.post("/api/delete?type=known");
+    await axios.post("/api/delete?type=unknown");
+    for (const knownFace of knownFaces) {
+      await uploadFile(knownFace, "known");
+    }
+    setIsUploadKnownFace(true);
+  };
+
+  const handleClearKnownFaces = () => {
+    setKnownFaces([]);
+    setIsUploadKnownFace(false);
+    setUnknownFace(null);
+    setIsUploadUnknownFace(false);
+    setProcessedFace("");
+  };
+
+  const handleUnknownFaceChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    setUnknownFace(file);
+  };
+
+  const handleRemoveUnknownFace = () => {
+    setUnknownFace(null);
+  };
+
+  const handleUploadUnknownFace = async () => {
+    await axios.post("/api/delete?type=unknown");
+    if (unknownFace) {
+      await uploadFile(unknownFace, "unknown");
+      setIsUploadUnknownFace(true);
+    } else {
+      console.error("No file selected");
+    }
+  };
+
+  const handleClearUnknownFace = () => {
+    setUnknownFace(null);
+    setIsUploadUnknownFace(false);
+    setProcessedFace("");
+  };
+
+  const uploadFile = async (file: File, type: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(`/api/upload?type=${type}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  const handleSubmitUnknownFace = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post("/api/submit");
+
+      if (response.status === 200 && response.data.length) {
+        setProcessedFace(response.data[0]);
+      } else {
+        console.error(
+          "Unexpected response format or empty response:",
+          response
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting unknown face:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="px-8 md:px-16 py-16 text-white min-h-screen">
+      {isLoading && <Spinner />}
+      <div className="flex justify-center items-end mb-8">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-wider">
+          Face Finder
+        </h1>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <div className="flex items-center gap-6">
+          <h2 className="text-xl md:text-3xl font-semibold tracking-wide">
+            Known Faces
+          </h2>
+          {!isUploadKnownFace && (
+            <div className="tooltip">
+              <label className="btn">
+                <Image
+                  src="/search.svg"
+                  alt="Search Logo"
+                  width={16}
+                  height={16}
+                />
+                <input
+                  id="known"
+                  type="file"
+                  key={knownFaces.length}
+                  className="hidden"
+                  onChange={handleKnownFacesChange}
+                  accept=".jpg, .jpeg, .png"
+                  multiple
+                />
+              </label>
+              <span className="tooltiptext">Search</span>
+            </div>
+          )}
+          {knownFaces.length > 0 && isUploadKnownFace && (
+            <div className="tooltip">
+              <label className="btn" onClick={handleClearKnownFaces}>
+                <Image
+                  src="/cross.svg"
+                  alt="Cross Logo"
+                  width={16}
+                  height={16}
+                />
+              </label>
+              <span className="tooltiptext">Clear</span>
+            </div>
+          )}
         </div>
+        {knownFaces.length > 0 && !isUploadKnownFace && (
+          <div className="tooltip">
+            <label className="btn" onClick={handleUploadKnownFaces}>
+              <Image
+                src="/upload.svg"
+                alt="Upload Logo"
+                width={16}
+                height={16}
+              />
+            </label>
+            <span className="tooltiptext">Upload</span>
+          </div>
+        )}
       </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-2 mb-8">
+        {knownFaces.map((file, index) => {
+          const url = URL.createObjectURL(file);
+          return (
+            <div key={index} className="relative mb-2 break-inside">
+              <Image
+                src={url}
+                alt={`Known Face ${index + 1}`}
+                width={400}
+                height={300}
+                className="rounded-xl"
+              />
+              {!isUploadKnownFace && (
+                <button
+                  className="absolute top-2 right-2 p-1 rounded-full bg-black bg-opacity-30 backdrop-blur-sm border border-white border-opacity-30"
+                  onClick={() => handleRemoveKnownFace(index)}
+                >
+                  <Image
+                    src="/cross.svg"
+                    alt="Cross Logo"
+                    width={16}
+                    height={16}
+                  />
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+      <div className="relative flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 md:pr-4 mb-4 md:mb-0">
+          <div className="flex justify-between mb-4">
+            {isUploadKnownFace && (
+              <div className="flex items-center gap-6">
+                <h2 className="text-xl md:text-3xl font-semibold tracking-wide">
+                  Unknown Face
+                </h2>
+                {!isUploadUnknownFace && (
+                  <div className="tooltip">
+                    <label className="btn">
+                      <Image
+                        src="/search.svg"
+                        alt="Search Logo"
+                        width={16}
+                        height={16}
+                      />
+                      <input
+                        id="unknown"
+                        type="file"
+                        key={unknownFace ? unknownFace.name : "unknown"}
+                        className="hidden"
+                        onChange={handleUnknownFaceChange}
+                        accept=".jpg, .jpeg, .png"
+                      />
+                    </label>
+                    <span className="tooltiptext">Search</span>
+                  </div>
+                )}
+                {unknownFace && isUploadUnknownFace && (
+                  <div className="tooltip">
+                    <label className="btn" onClick={handleClearUnknownFace}>
+                      <Image
+                        src="/cross.svg"
+                        alt="Cross Logo"
+                        width={16}
+                        height={16}
+                      />
+                    </label>
+                    <span className="tooltiptext">Clear</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {unknownFace && !isUploadUnknownFace && (
+              <div className="tooltip flex items-center">
+                <label className="btn" onClick={handleUploadUnknownFace}>
+                  <Image
+                    src="/upload.svg"
+                    alt="Upload Logo"
+                    width={16}
+                    height={16}
+                  />
+                </label>
+                <span className="tooltiptext">Upload</span>
+              </div>
+            )}
+          </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+          {unknownFace && (
+            <div className="relative">
+              <Image
+                src={URL.createObjectURL(unknownFace)}
+                alt="Unknown Face"
+                width={2000}
+                height={1000}
+                className="rounded-xl"
+              />
+              {!isUploadUnknownFace && (
+                <button
+                  className="absolute top-2 right-2 p-1 rounded-full bg-black bg-opacity-30 backdrop-blur-sm border border-white border-opacity-30"
+                  onClick={handleRemoveUnknownFace}
+                >
+                  <Image
+                    src="/cross.svg"
+                    alt="Cross Logo"
+                    width={16}
+                    height={16}
+                  />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+        <div className="w-full h-px md:h-auto md:w-px md:mt-14 md:mb-1 bg-gray-400"></div>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <div className="w-full md:w-1/2 md:pl-4 mt-4 md:mt-0">
+          <div className="flex justify-between mb-4">
+            {isUploadUnknownFace && (
+              <div className="flex items-center">
+                <h2 className="text-xl md:text-3xl font-semibold tracking-wide">
+                  Processed Face
+                </h2>
+              </div>
+            )}
+            {isUploadUnknownFace && (
+              <div className="tooltip flex items-center">
+                <label className="btn" onClick={handleSubmitUnknownFace}>
+                  <Image
+                    src="/done.svg"
+                    alt="Done Logo"
+                    width={16}
+                    height={16}
+                  />
+                </label>
+                <span className="tooltiptext">Submit</span>
+              </div>
+            )}
+          </div>
+
+          {processedFace && (
+            <div className="relative">
+              <Image
+                src={processedFace}
+                alt="Processed Face"
+                width={2000}
+                height={1000}
+                className="rounded-xl"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

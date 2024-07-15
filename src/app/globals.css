@@ -1,33 +1,96 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --color-background: #000000;
+  --gradient: linear-gradient(to right, #503b9a, #269cc1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+* {
+  font-family: "Poppins", sans-serif;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--color-background);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+h1 {
+  background-clip: text;
+  background-image: var(--gradient);
+  color: var(--color-background);
+  -webkit-text-stroke-color: transparent;
+  -webkit-text-stroke-width: calc(1em / 14);
+}
+
+.btn {
+  border: none;
+  display: inline-block;
+  border-radius: 0.8rem;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+  padding: 10px 10px;
+  cursor: pointer;
+}
+
+.btn:before,
+.btn:after {
+  content: ' ';
+  position: absolute;
+  border-radius: 0.8rem;
+}
+
+.btn:before {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -2;
+  background: var(--gradient);
+}
+
+.btn:after {
+  top: 1.5px;
+  bottom: 1.5px;
+  left: 1.5px;
+  right: 1.5px;
+  background-color: var(--color-background);
+  z-index: -1;
+  opacity: 1;
+  transition: all 0.6s ease-in-out;
+}
+
+.btn:hover:after {
+  opacity: 0;
+}
+
+.tooltip {
+  position: relative;
+  display: flex;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 80px;
+  background-color: #ffffff;
+  color: var(--color-background);
+  font-size: 10px;
+  text-align: center;
+  border-radius: 0.5rem;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 115%;
+  left: 40%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 0.5;
 }
