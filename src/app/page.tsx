@@ -2,7 +2,7 @@
 import { ChangeEvent, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
-import Spinner from "./components/Spinner/Spinner";
+import Spinner from "../components/Spinner/Spinner";
 
 export default function Home() {
   const [knownFaces, setKnownFaces] = useState<File[]>([]);
