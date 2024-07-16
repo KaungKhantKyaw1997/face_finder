@@ -135,20 +135,15 @@ export default function Home() {
               <span className="tooltiptext">Search</span>
             </div>
           )}
-          {knownFaces.length > 0 && isUploadKnownFace && (
-            <div className="tooltip">
-              <label className="btn" onClick={handleClearKnownFaces}>
-                <Image
-                  src="/cross.svg"
-                  alt="Cross Logo"
-                  width={16}
-                  height={16}
-                />
-              </label>
-              <span className="tooltiptext">Clear</span>
-            </div>
-          )}
         </div>
+        {knownFaces.length > 0 && isUploadKnownFace && (
+          <div className="tooltip">
+            <label className="btn" onClick={handleClearKnownFaces}>
+              <Image src="/cross.svg" alt="Cross Logo" width={16} height={16} />
+            </label>
+            <span className="tooltiptext">Clear</span>
+          </div>
+        )}
         {knownFaces.length > 0 && !isUploadKnownFace && (
           <div className="tooltip">
             <label className="btn" onClick={handleUploadKnownFaces}>
@@ -223,19 +218,19 @@ export default function Home() {
                     <span className="tooltiptext">Search</span>
                   </div>
                 )}
-                {unknownFace && isUploadUnknownFace && (
-                  <div className="tooltip">
-                    <label className="btn" onClick={handleClearUnknownFace}>
-                      <Image
-                        src="/cross.svg"
-                        alt="Cross Logo"
-                        width={16}
-                        height={16}
-                      />
-                    </label>
-                    <span className="tooltiptext">Clear</span>
-                  </div>
-                )}
+              </div>
+            )}
+            {unknownFace && isUploadUnknownFace && (
+              <div className="tooltip">
+                <label className="btn" onClick={handleClearUnknownFace}>
+                  <Image
+                    src="/cross.svg"
+                    alt="Cross Logo"
+                    width={16}
+                    height={16}
+                  />
+                </label>
+                <span className="tooltiptext">Clear</span>
               </div>
             )}
             {unknownFace && !isUploadUnknownFace && (
