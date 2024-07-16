@@ -279,7 +279,9 @@ export default function Home() {
           )}
         </div>
 
-        <div className="w-full h-px md:h-auto md:w-px md:mt-14 md:mb-1 bg-gray-400"></div>
+        {isUploadUnknownFace && (
+          <div className="w-full h-px md:h-auto md:w-px md:mt-14 md:mb-1 bg-gray-400"></div>
+        )}
 
         <div className="w-full md:w-1/2 md:pl-4 mt-4 md:mt-0">
           <div className="flex justify-between mb-4">

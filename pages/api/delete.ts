@@ -10,11 +10,14 @@ const handler: NextApiHandler = async (req, res) => {
   }
 
   const folderPath = path.join(process.cwd(), `/public/${type}_faces`);
+  console.log(`Deleting folder: ${folderPath}`);
 
   try {
     await fs.rm(folderPath, { recursive: true, force: true });
+    console.log(`Folder deleted successfully: ${folderPath}`);
     return res.status(200).json({ message: "Folder deleted successfully" });
   } catch (error: any) {
+    console.error(`Error deleting folder: ${error.message}`);
     return res.status(500).json({ error: error.message });
   }
 };
