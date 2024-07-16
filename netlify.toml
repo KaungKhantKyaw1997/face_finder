@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "out"
+
+[context.production.environment]
+  NODE_ENV = "production"
+  MICROSERVICE_URL = "https://your-production-microservice-url"
+  IMAGE_DOMAINS = "your-domain.com,another-domain.com"
+
+[context.development.environment]
+  NODE_ENV = "development"
+  MICROSERVICE_URL = "http://127.0.0.1:5000/detect_faces"
+  IMAGE_DOMAINS = "127.0.0.1"
