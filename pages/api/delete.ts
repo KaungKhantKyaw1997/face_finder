@@ -9,7 +9,9 @@ const handler: NextApiHandler = async (req, res) => {
     return res.status(400).json({ error: "Type is required" });
   }
 
-  const folderPath = path.join(process.cwd(), `/public/${type}_faces`);
+  const baseDir =
+    process.env.NODE_ENV === "production" ? "/tmp" : process.cwd();
+  const folderPath = path.join(baseDir, `/public/${type}_faces`);
   console.log(`Deleting folder: ${folderPath}`);
 
   try {

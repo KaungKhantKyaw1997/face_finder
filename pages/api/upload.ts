@@ -19,7 +19,6 @@ const readFile = (
     options.uploadDir = uploadDir;
     options.filename = (name, ext, path, form) => {
       return path.originalFilename + "";
-      // return Date.now().toString() + "_" + path.originalFilename;
     };
   }
 
@@ -34,7 +33,9 @@ const readFile = (
 
 const handler: NextApiHandler = async (req, res) => {
   const { type } = req.query;
-  const uploadDir = path.join(process.cwd(), `/public/${type}_faces`);
+  const baseDir =
+    process.env.NODE_ENV === "production" ? "/tmp" : process.cwd();
+  const uploadDir = path.join(baseDir, `/public/${type}_faces`);
 
   try {
     await fs.readdir(uploadDir);

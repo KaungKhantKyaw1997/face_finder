@@ -7,8 +7,16 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const unknownFacesDir = path.resolve("./public/unknown_faces");
-    const knownFacesDir = path.resolve("./public/known_faces");
+    const unknownFacesDir = path.resolve(
+      process.env.NODE_ENV === "production"
+        ? "/tmp/unknown_faces"
+        : "./public/unknown_faces"
+    );
+    const knownFacesDir = path.resolve(
+      process.env.NODE_ENV === "production"
+        ? "/tmp/known_faces"
+        : "./public/known_faces"
+    );
     const microserviceUrl = process.env.MICROSERVICE_URL;
 
     if (!microserviceUrl) {
