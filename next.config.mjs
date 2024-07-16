@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: process.env.IMAGE_DOMAINS
-      ? process.env.IMAGE_DOMAINS.split(",")
+    domains: process.env.IMAGE_DOMAIN
+      ? process.env.IMAGE_DOMAIN.split(",")
       : [],
   },
   env: {
