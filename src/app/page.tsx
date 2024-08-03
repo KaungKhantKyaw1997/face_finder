@@ -9,7 +9,7 @@ export default function Home() {
   const [isUploadKnownFace, setIsUploadKnownFace] = useState(false);
   const [unknownFace, setUnknownFace] = useState<File | null>(null);
   const [isUploadUnknownFace, setIsUploadUnknownFace] = useState(false);
-  const [processedFace, setProcessedFace] = useState("");
+  const [processFace, setProcessFace] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleKnownFacesChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +35,7 @@ export default function Home() {
     setIsUploadKnownFace(false);
     setUnknownFace(null);
     setIsUploadUnknownFace(false);
-    setProcessedFace("");
+    setProcessFace("");
   };
 
   const handleUnknownFaceChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +60,7 @@ export default function Home() {
   const handleClearUnknownFace = () => {
     setUnknownFace(null);
     setIsUploadUnknownFace(false);
-    setProcessedFace("");
+    setProcessFace("");
   };
 
   const uploadFile = async (file: File, type: string) => {
@@ -84,8 +84,8 @@ export default function Home() {
     try {
       const response = await axios.post("/api/submit");
 
-      if (response.status === 200 && response.data.length) {
-        setProcessedFace(response.data[0]);
+      if (response.status === 200 && response.data.image_links.length) {
+        setProcessFace(response.data.image_links[0]);
       } else {
         console.error(
           "Unexpected response format or empty response:",
@@ -283,7 +283,7 @@ export default function Home() {
             {isUploadUnknownFace && (
               <div className="flex items-center">
                 <h2 className="text-xl md:text-3xl font-semibold tracking-wide">
-                  Processed Face
+                  Process Face
                 </h2>
               </div>
             )}
@@ -302,11 +302,11 @@ export default function Home() {
             )}
           </div>
 
-          {processedFace && (
+          {processFace && (
             <div className="relative">
               <Image
-                src={processedFace}
-                alt="Processed Face"
+                src={processFace}
+                alt="Process Face"
                 width={2000}
                 height={1000}
                 className="rounded-xl"
